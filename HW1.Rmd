@@ -140,7 +140,30 @@ wage1 %>%
   lm(lwage~educ+smsa+profocc,data=.)
 ```
 
+```{r}
+#【before】
+wage1 %>% 
+  lm(lwage~educ,data=.)
+#【after】
+wage1%>%
+  lm(lwage~educ+profocc+smsa,data=.)
+```
 
+```{r}
+wage1 %>% 
+  lm(lwage~educ,data=.)-> model_1
+wage1%>%
+  lm(lwage~educ+profocc+smsa,data=.)-> model_2
+
+library(sandwich)
+library(lmtest)
+library(stargazer)
+
+coeftest(model_1, vcov. = vcovHC, type="HC1") -> model_1_coeftest
+coeftest(model_2, vcov. = vcovHC, type="HC1") -> model_2_coeftest
+structure(model_1_coeftest)
+structure(model_2_coeftest)
+```
 6. 大致說來，教育年限12年表示高中畢業，大學畢業會有16年的教育，請問介於12年以上-16年以下的教育年限代表什麼？
 
 ```
