@@ -173,6 +173,19 @@ structure(model_2_coeftest)
 7. 取出教育年限介於12-16年（含上下限）的資料，分別計算以下三群教育年限勞動者的平均薪資：12年，13-15年，16年。
 [hint: dplyr::filter(), dplyr::group_by(), dplyr::summarise(), cut()]
 
+
+```{r}
+ fliter_educ<-dplyr::filter(wage1,16>=educ&educ>=12)
+group_by(15>=educ&educ>=13,educ==12,educ=16)%>%
+
+```
+  summarise(avg=mean(wage))
+
+```
+ 
+  dplyr::summarise(avg=mean(wage))
+```
+
 8. 在下一部份的文章閱讀練習裡，文章提到: 
 
 > In a comparison of the earnings of people with degrees and people without them, those who start university but do not finish are lumped in with those who never started, even though they, too, will have paid fees and missed out on earnings. Their numbers are considerable. 
@@ -192,3 +205,5 @@ But the financial returns are falling.](https://www.economist.com/news/internati
 
 造成選擇性偏誤原因：「時間多錢多多」造成「越多人上大學」，「時間多錢多多」是「富有國家」常見現象，所以單純比較上大學比例高和低的國家，有可能只是在比誰的「時間多、錢多」。（這類的選擇性偏誤也稱為內生性偏誤。）
 ```
+
+我試試～
