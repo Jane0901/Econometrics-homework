@@ -29,7 +29,7 @@ params:
 你的文字答案。
 ```
 
-# 教育與薪資 
+# 教育與薪資
 
 一開始請執行
 ```{r set up}
@@ -44,7 +44,7 @@ wage1 <- read_dta("http://fmwww.bc.edu/ec-p/data/wooldridge/wage1.dta")
 
 ```
  資料來源為Faculty Microcomputer Resource Center
- 
+
  變數解釋
   1. wage                     平均每小時所得
   2. educ                     受教育年數
@@ -75,17 +75,36 @@ wage1 <- read_dta("http://fmwww.bc.edu/ec-p/data/wooldridge/wage1.dta")
 我們想要問："教育年限增加一年對勞動薪資的影響有多少？"
 
 2. 請使用`psych::pairs.panels()`來描述教育年限(educ)與勞動薪資(wage)間的特質。在兩者的相關度上，有沒有那個變數取對數(log)會比較好？為什麼？
+```{r}
+library('psych')
+wage1 %>%
+  dplyr::select(wage,educ) %>%
+  psych::pairs.panels()
+```
+
+```{r}
+library('psych')
+wage1 %>%
+  dplyr::select(wage,educ) %>%
+  mutate(logw=log(wage)) %>%
+  dplyr::select(logw,educ) %>%
+  psych::pairs.panels()
+```
+```
+因為educ的數值中有0，因此educ不能取log，
+已將wage取log，但效果不彰，因為相關係數只上升0.02，而且資料還是很集中，因此沒有哪個變數取log會比較好。
+```
 
 ```{r 第二題-沒有取對數}
 #沒有取對數
-wage1 %>% 
+wage1 %>%
   select(wage,educ) %>%
   pairs.panels()
 ```
 
 ```{r 第二題-對wage取對數}
 #對wage取對數
-wage1 %>% 
+wage1 %>%
   select(lwage,educ) %>%
   pairs.panels()
 ```
@@ -97,15 +116,30 @@ wage1 %>%
 
 3. 請使用OLS估計以下的迴歸模型：
 $$log(wage)=\beta_0+\beta_1 educ+\epsilon$$
+```{r}
+wage1 %>%
+  lm(log(wage)~educ,data=.) %>%
+  summary()
+```
 
 ```{r 第三題-簡單迴歸}
-wage1 %>% 
+wage1 %>%
   lm(lwage~educ,data=.)
 ```
 
 4. 從資料裡選出兩個可能造成$\beta_1$OLS估計值帶有選擇性偏誤的變數，請說明理由並加以適當敍述統計量佐證。
+```{r}
+library("knitr")
+is_numeric<-function(x) all(is.numeric(x))
+cor_educ<-function(x) cor(x,wage1$educ)
+wage1 %>%
+  select_if(is_numeric) %>%
+  summarise_all(cor_educ) %>%
+  kable()
+```
 
 ```
+<<<<<<< HEAD
 我們認為profocc及smsa這兩個變數可能使上述的估計值帶有選擇性偏誤。
 
 profocc：
@@ -143,21 +177,45 @@ wage1 %>%
 另外profocc和smsa與wage的相關係數分別為0.4417699、0.1778852，皆為正相關。
 ```
 
+=======
+expersq是推估工作經驗年資平方，它和教育是反向關係，他們的相關係數是-0.3312559，因此若漏了此變數，可能會高估教育的報酬。其實該複回歸模型應該加入exper變數，才能正確捕捉工資和工作經驗的關係。
+profocc是教授職業，因為是教授，所以教授的教育年數就高，所以比較的有可能不是教育年數，而是職業是不是教授。職業是教授和教育年數的相關係數是0.4967681。
+```
+>>>>>>> 6ce772f36b4843797015bc48d48ae84afa4eb15b
 5. 延續上題，請完成對應複迴歸模型的估計。
+```{r}
+wage1 %>%
+  lm(log(wage)~educ+profocc+expersq,data=.) %>%
+  summary()
+```
 
 ```{r 第五題-複迴歸}
-wage1 %>% 
+wage1 %>%
   lm(lwage~educ+smsa+profocc,data=.)
 ```
 
 6. 大致說來，教育年限12年表示高中畢業，大學畢業會有16年的教育，請問介於12年以上-16年以下的教育年限代表什麼？
+<<<<<<< HEAD
 
 ```
 教育年限為12年以上-16年以下，可能是高中讀的比一般人久，或是大學讀到一半放棄的情況。
 ```
 
+=======
+```
+大學肄業
+```
+>>>>>>> 6ce772f36b4843797015bc48d48ae84afa4eb15b
 7. 取出教育年限介於12-16年（含上下限）的資料，分別計算以下三群教育年限勞動者的平均薪資：12年，13-15年，16年。
 [hint: dplyr::filter(), dplyr::group_by(), dplyr::summarise(), cut()]
+```{r}
+wage1 %>%
+dplyr::filter(12<=educ&educ<=16)->wage1216
+wage1216%>%
+dplyr::group_by(cut(wage1216$educ,breaks=c(12,12.9,15,16),include.lowest = T))%>%
+summarise(avg=mean(wage),N = n())
+
+```
 
 ```{r 第七題-分群薪資平均}
 wage1%>%
@@ -166,11 +224,17 @@ wage1%>%
   summarise(mean(wage),N = n())
 ```
 
-8. 在下一部份的文章閱讀練習裡，文章提到: 
+8. 在下一部份的文章閱讀練習裡，文章提到:
 
-> In a comparison of the earnings of people with degrees and people without them, those who start university but do not finish are lumped in with those who never started, even though they, too, will have paid fees and missed out on earnings. Their numbers are considerable. 
+> In a comparison of the earnings of people with degrees and people without them, those who start university but do not finish are lumped in with those who never started, even though they, too, will have paid fees and missed out on earnings. Their numbers are considerable.
 
 在問題7中我們計算了三群人的平均薪資。請問若要避免文章所描述的問題，你會如何計算一位高中生若選擇上大學他會得到的預期薪資好處。[只使用問題7的數字及三群人人數]
+p=68/(113+68) The probability graduate from college
+p*8.04+(1-p)*6.03-5.37
+```{r}
+(68/(113+68))*8.041618+(113/(68+113))*6.030000-5.371364
+```
+
 
 ```{r 第八題-預期薪資好處}
 #將12年以上-16年以下與16年的資料合併，和12年的平均薪資比較差異
@@ -191,6 +255,7 @@ But the financial returns are falling.](https://www.economist.com/news/internati
 
 造成選擇性偏誤原因：「時間多錢多多」造成「越多人上大學」，「時間多錢多多」是「富有國家」常見現象，所以單純比較上大學比例高和低的國家，有可能只是在比誰的「時間多、錢多」。（這類的選擇性偏誤也稱為內生性偏誤。）
 ```
+<<<<<<< HEAD
 ```
 1. The Economist’s analysis of the data finds that returns are linked to the share of people with degrees, and the range of earnings. .. Their numbers are considerable. In America 40% of college students fail to graduate with four-year degrees within six years of enrolling. Drop-out rates across the developed world average around 30%. It is the students admitted with the lowest grades who are least likely to graduate.
 
@@ -212,3 +277,18 @@ But the financial returns are falling.](https://www.economist.com/news/internati
 
 造成選擇性偏誤原因：擁有某些特質的人容易上大學，所以單純比較上大學對教育溢酬的影響，可能只是在比較哪些特質的人教育溢酬較高。
 ```
+=======
+1.The Economist’s analysis of the data finds that returns are linked to the share of people with degrees, and the range of earnings....
+
+Most students know that a degree in mathematics or finance is likely to be more lucrative than one in music or social work. What fewer realise is that the graduate premium overstates the financial benefit of embarking on a degree if their school grades barely qualify them for entry, no matter what they study.....
+
+Including dropouts when calculating the returns to going to university makes a big difference. In a new book, “The Case Against Education”, Bryan Caplan of George Mason University argues that the low graduation rates of marginal students, and the fact that, for a given level of qualification, cleverer people tend to earn more, mean that the return on a four-year degree in America ranges from 6.5% for excellent students to just 1% for the weakest ones.
+
+效應評估問句:報酬率和擁有學位的人的比例有關？
+造成選擇性偏誤原因：
+  雖然數學或金融學位可能比音樂或社會工作更有利可圖，但不管大學學位在哪一個領域學習，必須具備一定的能力才能進入學校，所以能上大學和能力有一定的相關。而資料上顯示，邊緣學生的畢業率低，而擁有一定水平的資格且聰明的人傾向賺取更多，優秀學生的回報率是6.5％，最差的學生只有1％，中間的差距即是能力的差距，在同樣學歷下，能力差也會有影響。
+```
+3/29 測試
+3/29 test2
+
+>>>>>>> 6ce772f36b4843797015bc48d48ae84afa4eb15b
