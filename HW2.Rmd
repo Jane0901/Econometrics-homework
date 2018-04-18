@@ -117,8 +117,12 @@ coeftest(ols2, vcov. = vcovHC, type="HC1") -> ols2_coeftest
 
 #[row, conlumn]=［全選，Std.Error]=[,2]=[,Std.Error]
 stargazer(ols1,ols2,
-  se=list(ols1_coeftest[,"Std. Error"], ols2_coeftest[,"Std. Error"]),
+  se=list(ols1_coeftest[,"Std. Error"], ols2_coeftest[,"2"]),
   type="html",summary = FALSE, title="Regression Results")
+```
+
+```{r}
+ols1_coeftest
 ```
 
 ### (7)
